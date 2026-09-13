@@ -2,7 +2,7 @@
 
 ## What this project does
 
-This project audits a public website for AI readiness and on-site engagement.
+This project audits a public website for **AI readiness and on-site engagement**.
 
 It checks whether:
 
@@ -13,7 +13,9 @@ It checks whether:
 - important pages have useful internal links; and
 - important website claims can be compared with public external evidence.
 
-The audit accepts one HTTP or HTTPS URL and produces an evidence-based JSON report. It is read-only: it does not log in, submit forms, change website content, or apply recommendations.
+The audit accepts one HTTP or HTTPS URL and produces an **evidence-based JSON report**. It is read-only: it does not log in, submit forms, change website content, or apply recommendations.
+
+The main design goal is to move from a simple website checker to a **composable AI-readiness audit pipeline**, where each concern is handled by a focused skill and the entrypoint combines the results into one report.
 
 ## Dependencies and installations
 
@@ -23,19 +25,19 @@ Install all dependencies with:
 npm install
 ```
 
-1. `@google/genai` is a runtime dependency. It provides Gemini recommendations and Google Search grounding for external evidence. Install it with `npm install @google/genai`.
+1. `@google/genai` is a runtime dependency which provides Gemini recommendations and Google Search grounding for external evidence. Install it with `npm install @google/genai`.
 
-2. `cheerio` is a runtime dependency. It reads HTML, text, headings, links, metadata, and JSON-LD. Install it with `npm install cheerio`.
+2. `cheerio` is a runtime dependency which reads HTML, text, headings, links, metadata, and JSON-LD. Install it with `npm install cheerio`.
 
-3. `playwright` is a runtime dependency. It fetches pages and renders JavaScript-heavy pages when needed. Install it with `npm install playwright`.
+3. `playwright` is a runtime dependency which fetches pages and renders JavaScript-heavy pages when needed. Install it with `npm install playwright`.
 
-4. `robots-parser` is a runtime dependency. It checks `robots.txt` rules before crawling. Install it with `npm install robots-parser`.
+4. `robots-parser` is a runtime dependency which checks `robots.txt` rules before crawling. Install it with `npm install robots-parser`.
 
-5. `zod` is a runtime dependency. It supports data and recommendation validation. Install it with `npm install zod`.
+5. `zod` is a runtime dependency which supports data and recommendation validation. Install it with `npm install zod`.
 
-6. `eslint` is a development dependency. It checks code style with `npm run lint`. Install it with `npm install -D eslint`.
+6. `eslint` is a development dependency which checks code style with `npm run lint`. Install it with `npm install -D eslint`.
 
-7. `vitest` is a development dependency. It runs the test suite with `npm test`. Install it with `npm install -D vitest`.
+7. `vitest` is a development dependency which runs the test suite with `npm test`. Install it with `npm install -D vitest`.
 
 Playwright may also need its Chromium browser:
 
@@ -50,43 +52,45 @@ npx playwright install chromium
 In PowerShell, open the repository directory:
 
 ```powershell
-Set-Location "D:\adobe uni hackathon 2026\brand-ai-audit\brand-ai-readiness-audit"
+Set-Location "<marketplace-root>"
 ```
 
 Then install the packages and browser:
 
 ```powershell
-npm install
+npm install 
 npx playwright install chromium
 ```
 
 ### 2. Add the Gemini API key and model
 
-Create a `.env` file in the project root. Do not commit this file.
+Create a `.env` using the existing .env.example file in the project root.
 
-```dotenv
+```
 GEMINI_API_KEY=your-api-key
-GEMINI_MODEL=gemini-2.5-flash
-GEMINI_FALLBACK_MODEL=gemini-2.0-flash
+GEMINI_MODEL=gemini-3.6-flash
+GEMINI_FALLBACK_MODEL=gemini-3.5-flash-lite
 GEMINI_TIMEOUT_MS=30000
 ```
 
-`GEMINI_API_KEY` enables Gemini features. `GEMINI_MODEL` selects the main model. The fallback model and timeout are optional. The deterministic crawl and audit stages still work without a Gemini key, but external evidence and LLM recommendations will be unavailable or use fallback behavior.
+`GEMINI_API_KEY` enables Gemini features and allows the llm to provide recommendations and external evidences based on the claims extracted. `GEMINI_MODEL` selects the main model. The fallback model and timeout are optional. The deterministic crawl and audit stages still work without a Gemini key, but external evidence and LLM recommendations will be unavailable or use fallback behavior.
 
 ### 3. Run an audit
 
-```powershell
-npm run audit:site -- https://example.com/
-```
+The following run command will save the final report on `audit-report.json` which gets updated with every new website audit:
 
-This writes the final report to `audit-report.json`.
+Open your project directory in the terminal and run:
+
+```powershell
+npm run audit:site -- https://example.com/ 
+```
 
 Other useful commands:
 
 ```powershell
-npm test
+npm test 
 npm run lint
-npm run audit -- https://example.com/
+npm run audit -- https://example.com/ (shows the final report directly on the terminal)
 ```
 
 ## Skills
@@ -99,15 +103,15 @@ Runs the complete audit and creates the final report. It provides one reliable e
 
 ### 2. `crawl-access`
 
-Checks `robots.txt`, discovers sitemaps, crawls same-origin pages, and records source and rendered content. It gives every other skill the same bounded and trustworthy set of observations.
+Checks `robots.txt`, discovers sitemaps, crawls same-origin pages, and records source and rendered content. It gives every other skill the same bounded and trustworthy set of observations.This prevents different skills from making unrelated crawling decisions.
 
 ### 3. `site-understanding`
 
-Infers the site type, brand, entities, and page types. It lets later checks apply the right rules to the right pages instead of using generic assumptions.
+Infers the site type, brand, entities, and page types. It lets later checks apply the right rules to the right pages instead of using generic assumptions.For example, product-page specific rules can be applied to product pages instead of treating every page as if it had the same requirements.
 
 ### 4. `machine-readability`
 
-Compares source and rendered content and checks headings and extractable text. It detects content that people can see but automated systems may not receive.
+Compares source and rendered content and checks headings and extractable text. It detects content that people can see but automated systems may not receive like Javascript-rendered content.
 
 ### 5. `entity-fact-audit`
 
@@ -139,11 +143,11 @@ Compares website claims with matching external evidence. It keeps entity, predic
 
 ### 12. `recommendation-engine`
 
-Creates prioritized actions from findings and supported opportunities. It converts technical findings into useful next steps while supporting deterministic fallback behavior.
+Creates prioritized actions from findings and supported opportunities. It converts technical findings into useful next steps while supporting deterministic fallback behavior(even if the llm is not available, the reports will still be generated).
 
 ### 13. `recommendation-validator`
 
-Checks recommendation scope, evidence, priority, schema, and safety. It prevents generated recommendations from introducing unsupported metrics, URLs, or unsafe actions into the final report.
+Checks recommendation scope, evidence, priority, schema, and safety. It prevents generated recommendations from introducing unsupported metrics, URLs, or unsafe actions into the final report.If the llm for some case hallucinates, it will first validate its findings and decide whether it should be kept or not. 
 
 ## Architectural Flow
 
@@ -163,8 +167,63 @@ It checks whether:
 Then the actual audit begins.
 
 
-### 2. `Layer 1 - Crawler`
+### 2. `Layer 1 - Crawl and Access`
 
+-Uses HTTP-based page fetching to retrieve website content.
+-Sends multiple concurrent requests to handle large websites.
+-Performs robots.txt retrieval and crawl-policy checking before processing pages.
+-Uses URL discovery and bounded crawling to identify additional pages.
+-Maintains separate states for accessible, blocked, and failed pages, allowing the -pipeline to continue when individual requests fail.
+
+### 3. `Layer 2 - Site Understanding`
+
+-Performs rule-based page-type classification using URL patterns, metadata, content and structural signals.
+-Builds a site-level profile by aggregating page classifications and detected entity types.
+-Uses page eligibility rules to determine which downstream audits should apply to each page.
+
+
+### 4. `Layer 3 - Deterministic Audits`
+
+This layer primarily uses rule-based structural analysis and pattern detection rather than generative AI.
+
+-Machine readability: parses rendered/document structure and counts heading/content signals.
+-Structured data: extracts and parses JSON-LD / structured-data objects, then checks expected schema types against page eligibility.
+-Freshness: detects temporal patterns, dates and promotion/time-sensitive signals and evaluates their presence/consistency.
+-Engagement: analyzes page content and interaction-related signals using deterministic heuristics.
+
+
+### 5. `Layer 4 - Entity, Claim and Evidence Verification`
+
+-Converts extracted information into normalized Subject–Predicate–Object claims.
+-Uses LLM-based semantic classification with confidence thresholding to distinguish concrete, verifiable claims from generic marketing language.
+-Aggregates related facts into normalized claims before verification.
+-Generates verification tasks only for claims that pass the semantic filter.
+-Retrieves independent external evidence and compares it against the original claim.
+-Maintains entity scope so facts belonging to different products/entities are not incorrectly treated as contradictions.
+
+
+### 6. `Layer 5 - Recommendation and Prioritization`
+
+-Maps each detected finding to a remediation action.
+-Uses severity/priority-based ranking to determine which issues should be addressed first.
+-Uses the LLM as an enhancement layer to generate contextual rationale, expected impact and implementation guidance.
+-Maintains deterministic fallback recommendations when AI-generated recommendations are unavailable.
+
+
+### 7. `Layer 6 - Recommendation Validation`
+
+-Treats LLM-generated recommendations as untrusted output.
+-Performs deterministic grounding validation against the audit's known findings, URLs and evidence.
+-Rejects recommendations containing unsupported references rather than allowing hallucinated information into the final report.
+-Falls back to validated recommendations when necessary.
+
+
+### 8. `Layer 7 - Orchestrating and Reporting`
+
+-Uses a pipeline orchestration model to execute the individual skills in dependency order.
+-Independent deterministic audits can execute as separate stages while dependent verification stages consume their structured outputs.
+-Uses isolated error handling/fallbacks so failures in one optional component do not terminate the entire audit.
+-Aggregates all findings into a standardized AuditResult contract and serializes it into the final JSON report.
 
 
 ## How the entrypoint composes the skills
@@ -207,4 +266,3 @@ Testing was done at each important stage of the project:
 
 8. **End-to-end testing:** Run `npm run audit:site -- https://example.com/` with a public test URL. Confirm that the crawl completes, findings include evidence, recommendations are validated, limitations are recorded when needed, and `audit-report.json` is created.
 
-9. **Gemini-enabled testing:** When `GEMINI_API_KEY` is configured, run the same audit and verify that Gemini-backed claim filtering, external evidence, and recommendations work. Run it without the key as well to confirm that deterministic and fallback behavior still produces a report.
