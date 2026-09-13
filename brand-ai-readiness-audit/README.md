@@ -15,7 +15,7 @@ It checks whether:
 
 The audit accepts one HTTP or HTTPS URL and produces an evidence-based JSON report. It is read-only: it does not log in, submit forms, change website content, or apply recommendations.
 
-## Dependencies
+## Dependencies and installations
 
 Install all dependencies with:
 
@@ -144,6 +144,28 @@ Creates prioritized actions from findings and supported opportunities. It conver
 ### 13. `recommendation-validator`
 
 Checks recommendation scope, evidence, priority, schema, and safety. It prevents generated recommendations from introducing unsupported metrics, URLs, or unsafe actions into the final report.
+
+## Architectural Flow
+
+### 1. `Layer 0 - Input Validation`
+
+The orchestrator first receives a targetURL.
+
+For example:https://example.com
+
+It checks whether:
+
+-URL exists or not.
+-URL is a string.
+-URL is valid/inalid.
+-protocol is HTTP/HTTPS.
+
+Then the actual audit begins.
+
+
+### 2. `Layer 1 - Crawler`
+
+
 
 ## How the entrypoint composes the skills
 
