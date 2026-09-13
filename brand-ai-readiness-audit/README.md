@@ -1,21 +1,27 @@
 # Brand AI-Readiness Audit
 
+An intelligent, evidence-driven agent that helps brands become more discoverable, understandable, and trustworthy to AI systems — while turning every detected gap into an actionable improvement.
+
 ## What this project does
 
-This project audits a public website for **AI readiness and on-site engagement**.
+As AI assistants increasingly become a discovery layer for products, services, and brands, simply having a website is no longer enough. Brands need to ensure that their information is accessible, understandable, factually reliable, and easy for AI systems to interpret and surface.
 
-It checks whether:
+Brand AI-Readiness Audit provides an automated way to evaluate this readiness from a public website URL. It identifies gaps across AI discoverability, machine readability, entity and product understanding, structured information, content freshness, on-site engagement, and factual trustworthiness, then converts those gaps into prioritized recommendations.
 
-- crawlers can access and discover important pages;
-- page content is available in a machine-readable form;
-- products, services, and organizations are described clearly;
-- structured data and time-related information are useful and consistent;
-- important pages have useful internal links; and
-- important website claims can be compared with public external evidence.
+## How our agent solves it
 
-The audit accepts one HTTP or HTTPS URL and produces an **evidence-based JSON report**. It is read-only: it does not log in, submit forms, change website content, or apply recommendations.
+The agent takes a website URL and builds an evidence-backed AI-readiness assessment:
 
-The main design goal is to move from a simple website checker to a **composable AI-readiness audit pipeline**, where each concern is handled by a focused skill and the entrypoint combines the results into one report.
+Discover -> Understand -> Evaluate -> Verify -> Recommend -> Validate -> Report
+
+Discover: determines whether important website content is accessible and discoverable.
+Understand: builds context around the site's entities, pages, products, and services.
+Evaluate: checks machine readability, structured data, freshness, and engagement signals.
+Verify: identifies meaningful factual claims and, where possible, compares them with independent public evidence.
+Recommend: converts detected gaps into prioritized, practical actions.
+Validate: checks AI-generated recommendations against the audit evidence before including them in the final report.
+
+The result is a single evidence-based JSON audit that tells a brand not only what is wrong, but also what should be improved and why it matters for AI visibility and user engagement.
 
 ## Dependencies and installations
 
@@ -228,11 +234,23 @@ This layer primarily uses rule-based structural analysis and pattern detection r
 
 ## How the entrypoint composes the skills
 
-The orchestrator first validates the URL and asks `crawl-access` for public page data. It then sends that shared crawl result to `site-understanding` and the deterministic audits: access, machine readability, entity facts, structured data, freshness, and engagement.
+The audit-orchestrator acts as the single entrypoint and coordinates the specialist skills through a structured pipeline. Each stage consumes the output of earlier stages rather than independently re-crawling or re-interpreting the website.
 
-Next, entity facts and readable content go through `claim-extraction`. The resulting verification tasks are sent to `external-evidence` when Gemini is configured. `corroboration` compares the collected evidence with the claims. The orchestrator then combines all findings into the shared audit-result contract.
+1.Input & crawling: The orchestrator validates the supplied HTTP/HTTPS URL and invokes crawl-access to retrieve publicly accessible pages, discover additional URLs, and track accessible, blocked, and failed pages.
 
-Finally, `recommendation-engine` creates actions and `recommendation-validator` checks them before the report is written. When an optional service or specialist stage is unavailable, the orchestrator records a limitation and keeps the rest of the report whenever possible.
+2.Site understanding: The shared crawl data is passed to site-understanding, which builds a site profile and identifies relevant page types and entities. This context is then used to make downstream audits page-aware.
+
+3.Deterministic auditing: The orchestrator runs the core audits for machine readability, entity/fact quality, structured data, freshness, and engagement. These skills analyze the already-collected page data using their respective rules and produce structured findings with evidence.
+
+4.Claim verification: Relevant entity facts and page content are passed through claim-extraction. Candidate claims are normalized into structured facts and semantically filtered so that only meaningful, potentially verifiable claims proceed to verification planning.
+
+5.External evidence & corroboration: Verification tasks are passed to external-evidence to locate independent public evidence when available. corroboration then compares the website claims against that evidence rather than treating first-party claims as automatically trustworthy.
+
+6.Finding aggregation: Outputs from all specialist skills are combined into the shared audit-result contract. This gives every finding a consistent structure, including its severity, evidence, and suggested action.
+
+7.Recommendations & validation: recommendation-engine converts the detected gaps into prioritized remediation actions. recommendation-validator then checks generated recommendations against the audit context and rejects unsupported output, with safe fallbacks when necessary.
+
+8.Resilient execution: Specialist stages are isolated through controlled failure handling. If an optional AI service, external evidence source, or individual page is unavailable, the orchestrator records the limitation and preserves the valid results produced by the remaining pipeline.
 
 ## Output
 
